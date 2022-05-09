@@ -10,7 +10,7 @@
 #include "context.h"
 #include "timer.h"
 
-#define POWERUP_CHANCE 0.1f
+#define POWERUP_CHANCE 0.01f
 #define POWERUP_DURATION 5.f
 
 clock_t last_spawn;

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en-us" style="overflow: hidden; margin: 0; padding: 0;">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Yay</title>
+    <!--<script src="webgl-debug.js"></script>-->
+    <script src="wasm-arrays.js"></script>
+    <script>
+        var Module = {
+            print: function(text) {
+                if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                console.warn(text);
+            },
+            printErr: function(text) {
+                if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                console.error(text);
+            },
+            onRuntimeInitialized: function() {
+                console.log("[JS] WASM Loaded");
+
+                const canvas = document.createElement("canvas");
+                canvas.id = "ctxCanvas";
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+				canvas.style.width = "100%";
+				canvas.style.height = "100%";
+                canvas.style.overflow = "hidden";
+                canvas.style.margin = "0px";
+                canvas.style.padding = "0px";
+                canvasContainer.appendChild(canvas);
+                //const context = WebGLDebugUtils.makeDebugContext(canvas.getContext("webgl2"));
+				const context = canvas.getContext("webgl2");
+
+                Module.ccall("createContext", null, ["number", "number"], [window.innerWidth, window.innerHeight]);
+				document.getElementById("gameover").style.display = "none";
+
+				const resizeObserver = new ResizeObserver(() => {
+					Module.ccall("resize", null, ["number", "number"], [window.innerWidth, window.innerHeight]);
+				});
+
+				resizeObserver.observe(canvas);
+            },
+        };
+
+	 function undead(){
+		 document.getElementById("gameover").style.display = "none";
+		 Module.ccall("undead", null, [], []);
+	 }
+    </script>
+    <script async type="text/javascript" src="appWASM.js"></script>
+	<link rel="stylesheet" type="text/css" href="stylesheet.css">
+</head>
+<body style="background-color: #C8C8C8;">
+
+	<div class="top">
+		<p id="timer">0s</p>
+		<p id="dodges">Dodged: 0</p>
+	</div>
+	<span id="canvasContainer" style="overflow: hidden; margin: 0; padding: 0;"></span>
+	<div class="center container" id="gameover">
+		<p id="gameover-text">Game over</p>
+		<button id="gameover-btn" onclick="undead()">Try again?</button>
+	</div>
+
+</body>
+</html>
+
+

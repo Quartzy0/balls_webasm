@@ -10,7 +10,8 @@
 #include "context.h"
 #include "timer.h"
 
-#define DIFFICULTY_TIME_MULTIPLIER 0.1f
+#define POWERUP_CHANCE 0.1f
+#define POWERUP_DURATION 5.f
 
 clock_t last_spawn;
 clock_t frame_time;
@@ -26,6 +27,8 @@ uint32_t dodges;
 clock_t start_time;
 clock_t spawn_time;
 bool dead;
+CircleType active_powerup;
+clock_t powerup_start_time;
 
 void
 get_circle(Circle **out){
@@ -55,6 +58,10 @@ void
 die(){
 	dead = true;
 	memset(circles, 0, MAX_CIRCLES * sizeof(Circle));
+	circle_count_ = 0;
+	memset(free_indexes_, 0, MAX_CIRCLES * sizeof(*free_indexes_));
+	last_index_ = -1;
+	active_powerup = ENEMY;
 	EM_ASM(
 		document.getElementById("gameover").style.display = "block";
 	);
@@ -63,9 +70,47 @@ die(){
 void
 game_loop(){
 	if(dead) return;
-    if (((float) clock()-last_spawn)/((float) CLOCKS_PER_SEC)>=(spawn_time/((float) CLOCKS_PER_SEC)) && circle_count_<MAX_CIRCLES){
+	if(active_powerup!=ENEMY && clock()-powerup_start_time>=POWERUP_DURATION*CLOCKS_PER_SEC){
+		active_powerup = ENEMY;
+	}
+    if (clock()-last_spawn>=spawn_time && circle_count_<MAX_CIRCLES){
         Circle *c = NULL;
         get_circle(&c);
+
+		float powerup_chance = (rand()/((float) RAND_MAX));
+		if (powerup_chance<=POWERUP_CHANCE) {
+			float type_chance = rand()/((float) RAND_MAX);
+			CircleType type = type_chance*(TYPE_COUNT-1) + 1;
+			c->type = type;
+			switch (type) {
+				case POWERUP_CLEAR: {
+					c->r = 0.f;
+					c->g = 0.f;
+					c->b = 1.f;
+					break;
+				}
+				case POWERUP_INVINCIBILITY: {
+					c->r = 1.f;
+					c->g = 0.f;
+					c->b = 1.f;
+					break;
+				}
+				case POWERUP_REMOVER: {
+					c->r = 1.f;
+					c->g = 0.f;
+					c->b = 0.f;
+					break;
+				}
+			}
+
+		}else{
+			c->type = ENEMY;
+			c->r = 1.f;
+			c->g = 1.f;
+			c->b = 1.f;
+		}
+		c->border = 3.f;
+
         c->radius = (((float) rand())/((float) RAND_MAX)) * 60 + 10;
 		do{
 			c->x = (((float) rand())/((float) RAND_MAX)) * (width-c->radius*2);
@@ -84,8 +129,10 @@ game_loop(){
 		c->velX = dirX*speed;
 		c->velY = dirY*speed;
 
-		clock_t time_add = 1000.f - ((float) (clock()-start_time)/((float) CLOCKS_PER_SEC))*10.f;
-		spawn_time = (((float) time_add)/1000.f) * CLOCKS_PER_SEC;
+		float secondsSinceStart = ((float) clock()-start_time)/((float) CLOCKS_PER_SEC);
+		//float multiplier = fmaxf(powf(1 - (secondsSinceStart/MAX_DIFFICULTY), 5), 0.f);
+		float multiplier = expf(-powf(secondsSinceStart, 0.7f));
+		spawn_time = multiplier * CLOCKS_PER_SEC;
         last_spawn = clock();
 	}
 	clear_buffer();
@@ -99,9 +146,44 @@ game_loop(){
 		}
 
 		if(fabsf((circles[i].x+circles[i].radius)-mouseX)<=circles[i].radius && fabsf((circles[i].y+circles[i].radius)-mouseY)<=circles[i].radius){
-			//remove_circle_l(i);
-			die();
-			return;
+			switch (circles[i].type) {
+				case ENEMY: {
+					switch (active_powerup) {
+						case POWERUP_REMOVER: {
+							remove_circle_l(i);
+							continue;
+						}
+						case POWERUP_INVINCIBILITY: {
+							break;
+						}
+						default: {
+							die();
+							return;
+						}
+					}
+					break;
+				}
+				case POWERUP_CLEAR: {
+					memset(circles, 0, MAX_CIRCLES * sizeof(Circle));
+					circle_count_ = 0;
+					memset(free_indexes_, 0, MAX_CIRCLES * sizeof(*free_indexes_));
+					last_index_ = -1;
+					clear_buffer();
+					goto loop_end;
+				}
+				case POWERUP_REMOVER: {
+					active_powerup = POWERUP_REMOVER;
+					powerup_start_time = clock();
+					remove_circle_l(i);
+					continue;
+				}
+				case POWERUP_INVINCIBILITY: {
+					active_powerup = POWERUP_INVINCIBILITY;
+					powerup_start_time = clock();
+					remove_circle_l(i);
+					continue;
+				}
+			}
 		}
 
         circles[i].x += circles[i].velX;
@@ -109,6 +191,7 @@ game_loop(){
 
 		add_circle(&circles[i]);
     }
+	loop_end:
 	EM_ASM({
 			document.getElementById("dodges").innerText = "Dodges: " + $0;
 			document.getElementById("timer").innerText = $1 + "s";
@@ -157,6 +240,7 @@ void createContext (int widthIn, int heightIn) {
     printf("Created context\n");
     last_spawn = clock();
 	start_time = clock();
+	active_powerup = ENEMY;
 	emscripten_set_mousemove_callback("#ctxCanvas", NULL, 0, mouse_move_callback);
 	emscripten_set_main_loop(game_loop, 0, false);
 }
@@ -171,5 +255,6 @@ EMSCRIPTEN_KEEPALIVE
 void undead() {
 	dead = false;
 	start_time = clock();
+	active_powerup = ENEMY;
 	dodges = 0;
 }

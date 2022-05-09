@@ -11,12 +11,22 @@
 #include "emscripten/html5_webgl.h"
 
 #define MAX_CIRCLES 300
-#define CIRCLE_FLOAT_SIZE 30
+#define CIRCLE_FLOAT_SIZE 54
+
+typedef enum CircleType{
+ENEMY,
+POWERUP_INVINCIBILITY,
+POWERUP_CLEAR,
+POWERUP_REMOVER,
+TYPE_COUNT
+} CircleType;
 
 typedef struct Circle{
-    GLfloat x, y, radius;
+    GLfloat x, y, radius, border;
+	GLfloat r, g, b;
     GLfloat velX, velY;
     uint16_t index;
+	CircleType type;
     uint8_t valid; // 1 if data is valid
 } Circle;
 

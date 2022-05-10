@@ -4,8 +4,6 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Yay</title>
-    <!--<script src="out/webgl-debug.js"></script>-->
-    <script src="wasm-arrays.js"></script>
     <script>
         var Module = {
             print: function(text) {
@@ -29,7 +27,6 @@
                 canvas.style.margin = "0px";
                 canvas.style.padding = "0px";
                 canvasContainer.appendChild(canvas);
-                //const context = WebGLDebugUtils.makeDebugContext(canvas.getContext("webgl2"));
 				const context = canvas.getContext("webgl2");
 
                 Module.ccall("createContext", null, ["number", "number"], [window.innerWidth, window.innerHeight]);
@@ -56,6 +53,7 @@
 	<div class="top">
 		<p id="timer">0s</p>
 		<p id="dodges">Dodged: 0</p>
+		<p id="powerup">Powerup: Invincibility (5.23 s)</p>
 	</div>
 	<span id="canvasContainer" style="overflow: hidden; margin: 0; padding: 0;"></span>
 	<div class="center container" id="gameover">

@@ -29,6 +29,7 @@ clock_t spawn_time;
 bool dead;
 CircleType active_powerup;
 clock_t powerup_start_time;
+char *powerup_names[] = {NULL, "Invincibility", NULL, "Remover"};
 
 void
 get_circle(Circle **out){
@@ -151,6 +152,7 @@ game_loop(){
 					switch (active_powerup) {
 						case POWERUP_REMOVER: {
 							remove_circle_l(i);
+							dodges++;
 							continue;
 						}
 						case POWERUP_INVINCIBILITY: {
@@ -164,6 +166,7 @@ game_loop(){
 					break;
 				}
 				case POWERUP_CLEAR: {
+					dodges+=circle_count_;
 					memset(circles, 0, MAX_CIRCLES * sizeof(Circle));
 					circle_count_ = 0;
 					memset(free_indexes_, 0, MAX_CIRCLES * sizeof(*free_indexes_));
@@ -191,11 +194,20 @@ game_loop(){
 
 		add_circle(&circles[i]);
     }
-	loop_end:
-	EM_ASM({
-			document.getElementById("dodges").innerText = "Dodges: " + $0;
-			document.getElementById("timer").innerText = $1 + "s";
-	}, dodges, (clock()-start_time)/CLOCKS_PER_SEC);
+loop_end:
+	if(powerup_names[active_powerup]){
+		EM_ASM({
+				document.getElementById("dodges").innerText = "Dodges: " + $0;
+				document.getElementById("timer").innerText = $1 + "s";
+				document.getElementById("powerup").innerText = "Powerup: " + UTF8ToString($2) + "(" + $3 + " s)";
+		}, dodges, (clock()-start_time)/CLOCKS_PER_SEC, powerup_names[active_powerup], POWERUP_DURATION-(clock()-powerup_start_time)/CLOCKS_PER_SEC);
+	}else {
+		EM_ASM({
+				document.getElementById("dodges").innerText = "Dodges: " + $0;
+				document.getElementById("timer").innerText = $1 + "s";
+				document.getElementById("powerup").innerText = "";
+		}, dodges, (clock()-start_time)/CLOCKS_PER_SEC);
+	}
     draw();
 }
 
@@ -240,6 +252,7 @@ void createContext (int widthIn, int heightIn) {
     printf("Created context\n");
     last_spawn = clock();
 	start_time = clock();
+	srand((unsigned int) clock());
 	active_powerup = ENEMY;
 	emscripten_set_mousemove_callback("#ctxCanvas", NULL, 0, mouse_move_callback);
 	emscripten_set_main_loop(game_loop, 0, false);

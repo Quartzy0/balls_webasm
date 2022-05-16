@@ -9,17 +9,18 @@
 #include <stdlib.h>
 #include "context.h"
 #include "timer.h"
+#include "vector.h"
 
-#define POWERUP_CHANCE 0.01f
+
+//0.01f
+#define POWERUP_CHANCE 0.1f
 #define POWERUP_DURATION 5.f
 
 clock_t last_spawn;
 clock_t frame_time;
 
-Circle circles[MAX_CIRCLES];
-uint16_t circle_count_;
-uint16_t free_indexes_[MAX_CIRCLES];
-uint16_t last_index_ = -1;
+VECTOR_NEW(Circle, circles, MAX_CIRCLES);
+VECTOR_NEW(Circle*, clearers, MAX_CIRCLES);
 
 uint32_t mouseX, mouseY;
 
@@ -32,36 +33,22 @@ clock_t powerup_start_time;
 char *powerup_names[] = {NULL, "Invincibility", NULL, "Remover"};
 
 void
-get_circle(Circle **out){
-    if (last_index_ == ((uint16_t) - 1)){
-        (*out) = &circles[circle_count_];
-        (*out)->index = circle_count_;
-    }else{
-        (*out) = &circles[free_indexes_[last_index_]];
-        (*out)->index = free_indexes_[last_index_];
-        last_index_--;
-    }
-    (*out)->valid = 1;
-    circle_count_++;
-}
-
-void
-remove_circle_l(uint16_t index){
-	last_index_++;
-    free_indexes_[last_index_] = index;
-    circle_count_--;
-	circles[index].valid = 0;
-
-    memset(&circles[index], 0, sizeof(Circle));
+explode(Circle *c){
+	c->a = 0;
+	c->br = 1.f;
+	c->bg = 0.f;
+	c->bb = 0.f;
+	c->ba = 1.f;
+	c->border = 7.f;
+	c->animation = EXPLOSION;
+	c->animation_start = clock();
 }
 
 void
 die(){
 	dead = true;
-	memset(circles, 0, MAX_CIRCLES * sizeof(Circle));
-	circle_count_ = 0;
-	memset(free_indexes_, 0, MAX_CIRCLES * sizeof(*free_indexes_));
-	last_index_ = -1;
+	VECTOR_CLEAR(circles);
+	VECTOR_CLEAR(clearers);
 	active_powerup = ENEMY;
 	EM_ASM(
 		document.getElementById("gameover").style.display = "block";
@@ -71,12 +58,14 @@ die(){
 void
 game_loop(){
 	if(dead) return;
+	const float delta_time = ((float) (clock()-frame_time))/((float) CLOCKS_PER_SEC);
 	if(active_powerup!=ENEMY && clock()-powerup_start_time>=POWERUP_DURATION*CLOCKS_PER_SEC){
 		active_powerup = ENEMY;
 	}
-    if (clock()-last_spawn>=spawn_time && circle_count_<MAX_CIRCLES){
+    if (clock()-last_spawn>=spawn_time && VECTOR_COUNT(circles)<MAX_CIRCLES){
         Circle *c = NULL;
-        get_circle(&c);
+        VECTOR_ADD(circles, c, c->index);
+		c->valid = 1;
 
 		float powerup_chance = (rand()/((float) RAND_MAX));
 		if (powerup_chance<=POWERUP_CHANCE) {
@@ -111,6 +100,8 @@ game_loop(){
 			c->b = 1.f;
 		}
 		c->border = 3.f;
+		c->ba = 1.f;
+		c->a = 1.f;
 
         c->radius = (((float) rand())/((float) RAND_MAX)) * 60 + 10;
 		do{
@@ -126,7 +117,7 @@ game_loop(){
 		GLfloat norm = hypotf(velX, velY);
 		GLfloat dirX = velX/norm, dirY = velY/norm;
 
-		GLfloat speed = (((float) rand())/((float) RAND_MAX)) * 6.0f + 2.0f;
+		GLfloat speed = (((float) rand())/((float) RAND_MAX)) * 600.0f + 200.0f;
 		c->velX = dirX*speed;
 		c->velY = dirY*speed;
 
@@ -140,18 +131,44 @@ game_loop(){
     for (int i = 0; i < MAX_CIRCLES; ++i) {
         if (circles[i].valid!=1)continue;
 
-		if(circles[i].x + circles[i].radius*2 < 0 || circles[i].y + circles[i].radius*2 < 0 || circles[i].x > width || circles[i].y > height){
+		switch (circles[i].animation) {
+			case EXPLOSION: {
+				circles[i].radius += 10;
+				if(circles[i].radius>=400.f){
+					VECTOR_REMOVE(clearers, circles[i].clearer_index);
+					goto circle_remove;
+				}
+				goto loop_end_add;
+			}
+			case NONE: {
+				break;
+			}
+		}
+
+		if(circles[i].type!=POWERUP_CLEAR){
+			for (uint16_t j = 0; j < MAX_CIRCLES; j++) {
+				if(!clearers[j]) continue;
+
+				if(fabsf(circles[i].x-clearers[j]->x)<circles[i].radius+clearers[j]->radius && fabsf(circles[i].y-clearers[j]->y)<circles[i].radius+clearers[j]->radius){
+					dodges++;
+					goto circle_remove;
+				}
+			}
+		}
+
+		if(circles[i].x + circles[i].radius < 0 || circles[i].y + circles[i].radius < 0 || circles[i].x - circles[i].radius > width || circles[i].y - circles[i].radius > height){
 			dodges++;
-			remove_circle_l(i);
+		circle_remove:
+			VECTOR_REMOVE(circles, i);
 			continue;
 		}
 
-		if(fabsf((circles[i].x+circles[i].radius)-mouseX)<=circles[i].radius && fabsf((circles[i].y+circles[i].radius)-mouseY)<=circles[i].radius){
+		if(fabsf(circles[i].x-mouseX)<=circles[i].radius && fabsf(circles[i].y-mouseY)<=circles[i].radius){
 			switch (circles[i].type) {
 				case ENEMY: {
 					switch (active_powerup) {
 						case POWERUP_REMOVER: {
-							remove_circle_l(i);
+							VECTOR_REMOVE(circles, i);
 							dodges++;
 							continue;
 						}
@@ -159,39 +176,37 @@ game_loop(){
 							break;
 						}
 						default: {
-							die();
-							return;
+							break;
 						}
 					}
 					break;
 				}
 				case POWERUP_CLEAR: {
-					dodges+=circle_count_;
-					memset(circles, 0, MAX_CIRCLES * sizeof(Circle));
-					circle_count_ = 0;
-					memset(free_indexes_, 0, MAX_CIRCLES * sizeof(*free_indexes_));
-					last_index_ = -1;
-					clear_buffer();
-					goto loop_end;
+					explode(&circles[i]);
+					circles[i].velX = 0.f;
+					circles[i].velY = 0.f;
+					VECTOR_ADD_A(clearers, &circles[i], circles[i].clearer_index);
+					break;
 				}
 				case POWERUP_REMOVER: {
 					active_powerup = POWERUP_REMOVER;
 					powerup_start_time = clock();
-					remove_circle_l(i);
+					VECTOR_REMOVE(circles, i);
 					continue;
 				}
 				case POWERUP_INVINCIBILITY: {
 					active_powerup = POWERUP_INVINCIBILITY;
 					powerup_start_time = clock();
-					remove_circle_l(i);
+					VECTOR_REMOVE(circles, i);
 					continue;
 				}
 			}
 		}
 
-        circles[i].x += circles[i].velX;
-        circles[i].y += circles[i].velY;
+        circles[i].x += circles[i].velX * delta_time;
+        circles[i].y += circles[i].velY * delta_time;
 
+		loop_end_add:
 		add_circle(&circles[i]);
     }
 loop_end:
@@ -209,6 +224,7 @@ loop_end:
 		}, dodges, (clock()-start_time)/CLOCKS_PER_SEC);
 	}
     draw();
+	frame_time = clock();
 }
 
 int main(int argc, char const *argv[]) {

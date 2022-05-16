@@ -96,6 +96,7 @@ create_context() {
     glBindAttribLocation(programId, 2, "center");
 	glBindAttribLocation(programId, 3, "color");
 	glBindAttribLocation(programId, 4, "border");
+	glBindAttribLocation(programId, 5, "border_color");
 
     glLinkProgram(programId);
     glValidateProgram(programId);
@@ -154,11 +155,13 @@ draw() {
     glEnableVertexAttribArray(2);
 	glEnableVertexAttribArray(3);
 	glEnableVertexAttribArray(4);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), 0);
-    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (const void *) (2 * sizeof(GLfloat)));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (const void *) (3 * sizeof(GLfloat)));
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (const void *) (5 * sizeof(GLfloat)));
-	glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (const void *) (8 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(5);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), 0);
+    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (const void *) (2 * sizeof(GLfloat)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (const void *) (3 * sizeof(GLfloat)));
+	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (const void *) (5 * sizeof(GLfloat)));
+	glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (const void *) (9 * sizeof(GLfloat)));
+	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (const void *) (10 * sizeof(GLfloat)));
 
     glBindBuffer(GL_ARRAY_BUFFER, vertexObject);
     // Draw
@@ -178,63 +181,93 @@ add_circle(Circle *circle) {
     circle->index = circle_count;
     circle_count++;
 
+    vertices[vertex_index++] = circle->x - circle->radius;
+    vertices[vertex_index++] = circle->y - circle->radius;
+    vertices[vertex_index++] = circle->radius;
     vertices[vertex_index++] = circle->x;
     vertices[vertex_index++] = circle->y;
-    vertices[vertex_index++] = circle->radius;
-    vertices[vertex_index++] = circle->x + circle->radius;
-    vertices[vertex_index++] = circle->y + circle->radius;
 	vertices[vertex_index++] = circle->r;
 	vertices[vertex_index++] = circle->g;
 	vertices[vertex_index++] = circle->b;
+	vertices[vertex_index++] = circle->a;
 	vertices[vertex_index++] = circle->border;
+	vertices[vertex_index++] = circle->br;
+	vertices[vertex_index++] = circle->bg;
+	vertices[vertex_index++] = circle->bb;
+	vertices[vertex_index++] = circle->ba;
 
-    vertices[vertex_index++] = circle->x;
-    vertices[vertex_index++] = circle->y + circle->radius * 2;
-    vertices[vertex_index++] = circle->radius;
-    vertices[vertex_index++] = circle->x + circle->radius;
+    vertices[vertex_index++] = circle->x - circle->radius;
     vertices[vertex_index++] = circle->y + circle->radius;
-	vertices[vertex_index++] = circle->r;
-	vertices[vertex_index++] = circle->g;
-	vertices[vertex_index++] = circle->b;
-	vertices[vertex_index++] = circle->border;
-
-    vertices[vertex_index++] = circle->x + circle->radius * 2;
-    vertices[vertex_index++] = circle->y + circle->radius * 2;
     vertices[vertex_index++] = circle->radius;
-    vertices[vertex_index++] = circle->x + circle->radius;
-    vertices[vertex_index++] = circle->y + circle->radius;
-	vertices[vertex_index++] = circle->r;
-	vertices[vertex_index++] = circle->g;
-	vertices[vertex_index++] = circle->b;
-	vertices[vertex_index++] = circle->border;
-
     vertices[vertex_index++] = circle->x;
     vertices[vertex_index++] = circle->y;
-    vertices[vertex_index++] = circle->radius;
-    vertices[vertex_index++] = circle->x + circle->radius;
-    vertices[vertex_index++] = circle->y + circle->radius;
 	vertices[vertex_index++] = circle->r;
 	vertices[vertex_index++] = circle->g;
 	vertices[vertex_index++] = circle->b;
+	vertices[vertex_index++] = circle->a;
 	vertices[vertex_index++] = circle->border;
+	vertices[vertex_index++] = circle->br;
+	vertices[vertex_index++] = circle->bg;
+	vertices[vertex_index++] = circle->bb;
+	vertices[vertex_index++] = circle->ba;
 
-    vertices[vertex_index++] = circle->x + circle->radius * 2;
-    vertices[vertex_index++] = circle->y + circle->radius * 2;
-    vertices[vertex_index++] = circle->radius;
     vertices[vertex_index++] = circle->x + circle->radius;
     vertices[vertex_index++] = circle->y + circle->radius;
-	vertices[vertex_index++] = circle->r;
-	vertices[vertex_index++] = circle->g;
-	vertices[vertex_index++] = circle->b;
-	vertices[vertex_index++] = circle->border;
-
-    vertices[vertex_index++] = circle->x + circle->radius * 2;
+    vertices[vertex_index++] = circle->radius;
+    vertices[vertex_index++] = circle->x;
     vertices[vertex_index++] = circle->y;
-    vertices[vertex_index++] = circle->radius;
-    vertices[vertex_index++] = circle->x + circle->radius;
-    vertices[vertex_index++] = circle->y + circle->radius;
 	vertices[vertex_index++] = circle->r;
 	vertices[vertex_index++] = circle->g;
 	vertices[vertex_index++] = circle->b;
+	vertices[vertex_index++] = circle->a;
 	vertices[vertex_index++] = circle->border;
+	vertices[vertex_index++] = circle->br;
+	vertices[vertex_index++] = circle->bg;
+	vertices[vertex_index++] = circle->bb;
+	vertices[vertex_index++] = circle->ba;
+
+    vertices[vertex_index++] = circle->x - circle->radius;
+    vertices[vertex_index++] = circle->y - circle->radius;
+    vertices[vertex_index++] = circle->radius;
+    vertices[vertex_index++] = circle->x;
+    vertices[vertex_index++] = circle->y;
+	vertices[vertex_index++] = circle->r;
+	vertices[vertex_index++] = circle->g;
+	vertices[vertex_index++] = circle->b;
+	vertices[vertex_index++] = circle->a;
+	vertices[vertex_index++] = circle->border;
+	vertices[vertex_index++] = circle->br;
+	vertices[vertex_index++] = circle->bg;
+	vertices[vertex_index++] = circle->bb;
+	vertices[vertex_index++] = circle->ba;
+
+    vertices[vertex_index++] = circle->x + circle->radius;
+    vertices[vertex_index++] = circle->y + circle->radius;
+    vertices[vertex_index++] = circle->radius;
+    vertices[vertex_index++] = circle->x;
+    vertices[vertex_index++] = circle->y;
+	vertices[vertex_index++] = circle->r;
+	vertices[vertex_index++] = circle->g;
+	vertices[vertex_index++] = circle->b;
+	vertices[vertex_index++] = circle->a;
+	vertices[vertex_index++] = circle->border;
+	vertices[vertex_index++] = circle->br;
+	vertices[vertex_index++] = circle->bg;
+	vertices[vertex_index++] = circle->bb;
+	vertices[vertex_index++] = circle->ba;
+
+    vertices[vertex_index++] = circle->x + circle->radius;
+    vertices[vertex_index++] = circle->y - circle->radius;
+    vertices[vertex_index++] = circle->radius;
+    vertices[vertex_index++] = circle->x;
+    vertices[vertex_index++] = circle->y;
+	vertices[vertex_index++] = circle->r;
+	vertices[vertex_index++] = circle->g;
+	vertices[vertex_index++] = circle->b;
+	vertices[vertex_index++] = circle->a;
+	vertices[vertex_index++] = circle->border;
+	vertices[vertex_index++] = circle->br;
+	vertices[vertex_index++] = circle->bg;
+	vertices[vertex_index++] = circle->bb;
+	vertices[vertex_index++] = circle->ba;
 }

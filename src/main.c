@@ -13,7 +13,7 @@
 
 
 //0.01f
-#define POWERUP_CHANCE 0.1f
+#define POWERUP_CHANCE 0.02f
 #define POWERUP_DURATION 5.f
 
 clock_t last_spawn;
@@ -117,7 +117,7 @@ game_loop(){
 		GLfloat norm = hypotf(velX, velY);
 		GLfloat dirX = velX/norm, dirY = velY/norm;
 
-		GLfloat speed = (((float) rand())/((float) RAND_MAX)) * 600.0f + 200.0f;
+		GLfloat speed = (((float) rand())/((float) RAND_MAX)) * 400.0f + 150.0f;
 		c->velX = dirX*speed;
 		c->velY = dirY*speed;
 
@@ -176,7 +176,8 @@ game_loop(){
 							break;
 						}
 						default: {
-							break;
+							die();
+							return;
 						}
 					}
 					break;

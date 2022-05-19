@@ -30,7 +30,6 @@
 				const context = canvas.getContext("webgl2");
 
                 Module.ccall("createContext", null, ["number", "number"], [window.innerWidth, window.innerHeight]);
-				document.getElementById("gameover").style.display = "none";
 
 				const resizeObserver = new ResizeObserver(() => {
 					Module.ccall("resize", null, ["number", "number"], [window.innerWidth, window.innerHeight]);
@@ -41,6 +40,8 @@
         };
 
 	 function undead(){
+		 document.getElementById("gameover-text").innerText = "Game over";
+		 document.getElementById("gameover-btn").innerText = "Try again?";
 		 document.getElementById("gameover").style.display = "none";
 		 Module.ccall("undead", null, [], []);
 	 }
@@ -51,15 +52,15 @@
 <body style="background-color: #C8C8C8;">
 
 	<div class="top">
-		<p id="timer">0s</p>
-		<p id="dodges">Dodged: 0</p>
+		<p id="timer"></p>
+		<p id="dodges"></p>
 		<br>
-		<p id="powerup">Powerup: Invincibility (5.23 s)</p>
+		<p id="powerup"></p>
 	</div>
 	<span id="canvasContainer" style="overflow: hidden; margin: 0; padding: 0;"></span>
 	<div class="center container" id="gameover">
-		<p id="gameover-text">Game over</p>
-		<button id="gameover-btn" onclick="undead()">Try again?</button>
+		<p id="gameover-text"></p>
+		<button id="gameover-btn" onclick="undead()" class="menu-btn">Play</button>
 	</div>
 
 </body>

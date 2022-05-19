@@ -15,6 +15,7 @@
 //0.01f
 #define POWERUP_CHANCE 0.02f
 #define POWERUP_DURATION 5.f
+#define START_DELAY 0.5f
 
 clock_t last_spawn;
 clock_t frame_time;
@@ -27,7 +28,8 @@ uint32_t mouseX, mouseY;
 uint32_t dodges;
 clock_t start_time;
 clock_t spawn_time;
-bool dead;
+bool dead = true;
+bool started = false;
 CircleType active_powerup;
 clock_t powerup_start_time;
 char *powerup_names[] = {NULL, "Invincibility", NULL, "Remover"};
@@ -58,11 +60,18 @@ die(){
 void
 game_loop(){
 	if(dead) return;
+	if(!started){
+		started = ((float) ((float) ((float) clock())-start_time) / CLOCKS_PER_SEC) >= START_DELAY;
+		if(started){
+			start_time = clock();
+			printf("Started\n");
+		}
+	}
 	const float delta_time = ((float) (clock()-frame_time))/((float) CLOCKS_PER_SEC);
 	if(active_powerup!=ENEMY && clock()-powerup_start_time>=POWERUP_DURATION*CLOCKS_PER_SEC){
 		active_powerup = ENEMY;
 	}
-    if (clock()-last_spawn>=spawn_time && VECTOR_COUNT(circles)<MAX_CIRCLES){
+    if (clock()-last_spawn>=spawn_time && VECTOR_COUNT(circles)<MAX_CIRCLES && started){
         Circle *c = NULL;
         VECTOR_ADD(circles, c, c->index);
 		c->valid = 1;
@@ -283,8 +292,9 @@ void resize(int widthIn, int heightIn) {
 
 EMSCRIPTEN_KEEPALIVE
 void undead() {
-	dead = false;
 	start_time = clock();
 	active_powerup = ENEMY;
+	started = false;
 	dodges = 0;
+	dead = false;
 }

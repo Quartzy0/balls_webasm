@@ -18,11 +18,11 @@ canvas{
     top: 50%;
     transform: translate(-50%, -50%);
     width: 200px;
-    background: #3d3d3d;
+    background: #fafafa;
     overflow: hidden;
     border-radius: 20px;
     text-align: center;
-    box-shadow: 0 0 20px 8px #4d4c4c;
+    box-shadow: 0 0 10px 2px #797979;
     padding-left: 100px;
     padding-right: 100px;
     padding-top: 50px;
@@ -67,23 +67,32 @@ canvas{
     font-size: 30px;
 }
 
-#gameover-btn{
+.menu-btn{
     margin-top: 20px;
     margin-bottom: 0px;
     height: 5vh;
-    border-radius: 7px;
-    width: 10vw;
+    border-radius: 12px;
+    width: 25vw;
     overflow: hidden;
     outline: none;
     border: 1px solid #696969;
     font-size: 25px;
-    background-color: #b89ac6;
-    box-shadow: 0 0 5px 1px #4d4c4c;
+    background-color: #fafafa;
+    box-shadow: 0 1px 5px 1px #9f9f9f;
     font-weight: normal;
-    color: white;
+    color: black;
 }
 
-#gameover-btn:hover {
+@keyframes btn-hover {
+	from { background-color:  #fafafa; }
+	to { background-color:  #FF00D8; }
+}
+
+.menu-btn:hover {
     border: 1px solid #808080;
-    box-shadow: 0 0 5px 5px #4d4c4c;
+    box-shadow: 0 1px 5px 2px #4d4c4c;
+	animation-name: btn-hover;
+	animation-duration: 0.5s;
+	background-color: #FF00D8;
+	color: white;
 }

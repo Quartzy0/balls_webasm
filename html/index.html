@@ -28,11 +28,15 @@
                 canvas.style.padding = "0px";
                 canvasContainer.appendChild(canvas);
 				const context = canvas.getContext("webgl2");
+				const highscore = window.localStorage.getItem("highscore");
+				if(highscore){
+					document.getElementById("highscore").innerText = "High score: " + highscore;
+				}
 
                 Module.ccall("createContext", null, ["number", "number"], [window.innerWidth, window.innerHeight]);
 
 				const resizeObserver = new ResizeObserver(() => {
-					Module.ccall("resize", null, ["number", "number"], [window.innerWidth, window.innerHeight]);
+					Module.ccall("resize", null, ["number", "number"], [canvas.clientWidth, canvas.clientHeight]);
 				});
 
 				resizeObserver.observe(canvas);
@@ -51,7 +55,7 @@
 </head>
 <body style="background-color: #C8C8C8;">
 
-	<div class="top">
+	<div class="top txt-gold">
 		<p id="timer"></p>
 		<p id="dodges"></p>
 		<br>
@@ -59,6 +63,7 @@
 	</div>
 	<span id="canvasContainer" style="overflow: hidden; margin: 0; padding: 0;"></span>
 	<div class="center container" id="gameover">
+		<p id="highscore" class="txt-gold"></p>
 		<p id="gameover-text"></p>
 		<button id="gameover-btn" onclick="undead()" class="menu-btn">Play</button>
 	</div>

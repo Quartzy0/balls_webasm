@@ -32,6 +32,7 @@ GLfloat proj_matrix[16] = {-999.0f, 0.0f, 0.0f, 0.0f,
                            -1.0f, 1.0f, 0.0f, 1.0f};
 
 GLint heightLoc;
+GLint proj_loc;
 
 GLfloat vertices[MAX_CIRCLES * CIRCLE_FLOAT_SIZE];
 uint32_t circle_count;
@@ -116,6 +117,9 @@ create_context() {
     }
 
     glGenBuffers(1, &vertexObject);
+	glUseProgram(programId);
+    proj_loc = glGetUniformLocation(programId, "proj");
+    heightLoc = glGetUniformLocation(programId, "screenHeight");
 }
 
 void
@@ -132,10 +136,6 @@ draw() {
     proj_matrix[0] = 2.0f / ((float) width);
     proj_matrix[5] = -2.0f / ((float) height);
 
-    GLuint u_proj = glGetUniformLocation(programId, "proj");
-    heightLoc = glGetUniformLocation(programId, "screenHeight");
-    glUniformMatrix4fv(u_proj, 1, GL_FALSE, proj_matrix);
-    glUniform1f(heightLoc, (GLfloat) height);
 
     glBindBuffer(GL_ARRAY_BUFFER, vertexObject);
     glBufferData(GL_ARRAY_BUFFER, circle_count * CIRCLE_FLOAT_SIZE * sizeof(*vertices), vertices, GL_DYNAMIC_DRAW);
@@ -164,6 +164,8 @@ draw() {
 	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (const void *) (10 * sizeof(GLfloat)));
 
     glBindBuffer(GL_ARRAY_BUFFER, vertexObject);
+    glUniformMatrix4fv(proj_loc, 1, GL_FALSE, proj_matrix);
+    glUniform1f(heightLoc, (GLfloat) height);
     // Draw
     glDrawArrays(GL_TRIANGLES, 0, circle_count * 6);
 }

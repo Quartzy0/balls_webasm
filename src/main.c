@@ -52,9 +52,15 @@ die(){
 	VECTOR_CLEAR(circles);
 	VECTOR_CLEAR(clearers);
 	active_powerup = ENEMY;
-	EM_ASM(
+	EM_ASM({
+		let highscore = window.localStorage.getItem("highscore");
+		if(highscore<$0){
+			highscore = $0;
+			window.localStorage.setItem("highscore", $0);
+		}
+		document.getElementById("highscore").innerText = "High score: " + highscore;
 		document.getElementById("gameover").style.display = "block";
-	);
+	}, dodges);
 }
 
 void

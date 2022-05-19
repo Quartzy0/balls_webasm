@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Yay</title>
+    <title>Balls game</title>
     <script>
         var Module = {
             print: function(text) {
@@ -66,7 +66,30 @@
 		<p id="highscore" class="txt-gold"></p>
 		<p id="gameover-text"></p>
 		<button id="gameover-btn" onclick="undead()" class="menu-btn">Play</button>
+		<button id="tutorial-btn" onclick="document.getElementById('tutorial').style.display='block';" class="menu-btn">Tutorial</button>
+		<div id="tutorial" class="center container-no-padding txt-tutorial">
+			<button class="close-btn" onclick="document.getElementById('tutorial').style.display='none';">X</button>
+
+			<h3 style="text-align: center;">Tutorial</h3>
+			<p>The goal of this game is to dodge balls</p>
+			<img src="icon.png" width=300px height=300px>
+			<br>
+			<p>There are power ups to collect</p>
+			<img src="powerups.png" width=300px height=300px>
+			<br>
+			<img src="blue.png" width=16px height=16px>
+			the blue power up will clear some circles
+			<br>
+			<img src="red.png" width=16px height=16px>
+			the red power up will remove the circles you touch instead of killing you for 5 seconds
+			<br>
+			<img src="pink.png" width=16px height=16px>
+			the pink power up will make you invincible for 5 seconds
 	</div>
+
+	<script>
+	 document.getElementById("tutorial").style.display = "none";
+	</script>
 
 </body>
 </html>

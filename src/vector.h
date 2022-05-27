@@ -42,7 +42,7 @@
 
 #define VECTOR_CLEAR(name) do{					\
 		memset(name, 0, vector_capacity_ ## name * sizeof(*name)); \
-		vector_count_ ## name; \
+		vector_count_ ## name = 0; \
 		memset(vector_free_indices_ ## name, 0, vector_capacity_ ## name * sizeof(*vector_free_indices_ ## name)); \
 		vector_last_index_ ## name = -1;																\
 	}while(0)

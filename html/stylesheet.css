@@ -17,15 +17,15 @@ canvas{
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    width: 200px;
+    width: 10em;
     background: #fafafa;
     border-radius: 20px;
     text-align: center;
     box-shadow: 0 0 10px 2px #797979;
-    padding-left: 100px;
-    padding-right: 100px;
-    padding-top: 50px;
-    padding-bottom: 50px;
+    padding-left: 2em;
+    padding-right: 2em;
+    padding-top: 1em;
+    padding-bottom: 1em;
 }
 
 .container-no-padding{
@@ -33,9 +33,9 @@ canvas{
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    width: 800px;
+    width: 50em;
 	overflow: auto;
-	height: 800px;
+	height: 85vh;
     background: #fafafa;
     border-radius: 20px;
     text-align: center;
